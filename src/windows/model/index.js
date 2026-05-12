@@ -1,0 +1,28 @@
+// Vue page source restored from the packaged app; template, IPC and asset paths are kept unchanged.
+// Page path: src/windows/model/index.js
+(() => {
+  var e = {},
+    o = (e) => {
+      window.electronAPI.model_h_bus(e);
+    };
+  const d = {
+    data: () => ({}),
+    computed: {},
+    created() {},
+    mounted() {
+      (window.electronAPI.model_m_bus((e, o) => {
+        "load" == o.type && seeApp();
+      }),
+        o({ event: "mounted" }));
+    },
+    methods: {
+      closeWindow() {
+        o({ event: "close" });
+      },
+    },
+  };
+  Vue.createApp(d).mount("#app");
+  var t = window;
+  for (var n in e) t[n] = e[n];
+  e.__esModule && Object.defineProperty(t, "__esModule", { value: !0 });
+})();

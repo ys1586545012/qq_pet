@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+*.egg
+dist/
+/build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# pytest
+.pytest_cache/
+
+# QQ宠物原始安装包和Electron运行时（太大，不提交）
+*.exe
+qq_pet_app/
+qq_pet_extracted/
+
+
+# macOS 移植版
+node_modules/
+dist/
+build_*_Conflict/
+
+# 逆向分析报告
+新版QQ宠物*.md
+
+# 备份文件
+*.bak
+docs/

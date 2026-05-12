@@ -1,0 +1,28 @@
+// Vue page source restored from the packaged app; template, IPC and asset paths are kept unchanged.
+// Page path: src/windows/popups/windowTip/index.js
+(() => {
+  var e = {},
+    o = (e) => {
+      window.electronAPI.windowTip_h_bus(e);
+    };
+  const n = {
+    data: () => ({ toSee: null }),
+    computed: {},
+    created() {},
+    mounted() {
+      (window.electronAPI.windowTip_m_bus((e, o) => {
+        "load" == o.type && seeApp();
+      }),
+        o({ event: "mounted" }));
+    },
+    methods: {
+      closeWindow() {
+        o({ event: "close" });
+      },
+    },
+  };
+  Vue.createApp(n).mount("#app");
+  var t = window;
+  for (var d in e) t[d] = e[d];
+  e.__esModule && Object.defineProperty(t, "__esModule", { value: !0 });
+})();

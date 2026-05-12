@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+    </style>
+    <title>Document</title>
+    <script>
+      window.RufflePlayer = window.RufflePlayer || {};
+      window.RufflePlayer.config = {
+        autoplay: "on",
+        unmuteOverlay: "hidden",
+        allowScriptAccess: true,
+        allowNetworking: "all",
+        warnOnUnsupportedContent: false,
+        splashScreen: false,
+        preloader: false,
+        polyfills: true,
+        letterbox: "off",
+        wmode: "transparent",
+        fontSources: ["./Yahei.swf"],
+        defaultFonts: {
+          sans: ["微软雅黑"],
+          serif: ["微软雅黑"],
+          typewriter: ["微软雅黑"],
+        },
+      };
+    </script>
+    <script src="../../js/ruffle/ruffle.js"></script>
+    <script src="./indexOnLine.js"></script>
+  </head>
+
+  <body>
+    <div class="hlyg" id="hlygContainer"></div>
+    <script>
+      const ruffle = window.RufflePlayer.newest();
+      player = ruffle.createPlayer();
+      player.id = "hlyg";
+      player.name = "hlyg";
+      player.className = "hlyg";
+      player.setAttribute("allowScriptAccess", "always");
+      player.setAttribute("allowNetworking", "all");
+      document.getElementById("hlygContainer").appendChild(player);
+      player
+        .load({ url: "./main.swf", ...window.RufflePlayer.config })
+        .then(() => console.info("fishing main.swf loaded"))
+        .catch((error) => console.error("fishing main.swf load failed", error));
+    </script>
+  </body>
+</html>

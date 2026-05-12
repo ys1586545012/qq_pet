@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+
+# 第三方运行时和资源文件保持原样，避免格式化导致体积膨胀或加载差异。
+src/windows/lib/
+src/windows/js/ruffle/
+src/assets/
+resources/
