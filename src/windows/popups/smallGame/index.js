@@ -5,6 +5,18 @@
     t = (e) => {
       window.electronAPI.smallGame_h_bus(e);
     };
+  /**
+   * 与桌宠主窗口共用 app.html，全局 Ruffle 默认为 wmode 透明；
+   * 小游戏窗口若继续用透明模式，舞台未绘制区域会透出黑色，且易与叠层一起产生拖影。
+   */
+  try {
+    ((window.RufflePlayer = window.RufflePlayer || {}),
+      (window.RufflePlayer.config = Object.assign(
+        {},
+        window.RufflePlayer.config || {},
+        { wmode: "opaque" },
+      )));
+  } catch (i) {}
   const r = {
     data: () => ({
       dom: null,
@@ -12,7 +24,8 @@
         id: "gameMain",
         name: "gameMain",
         class: "gameMain",
-        wmode: "transparent",
+        /** 不透明合成，由 SWF / Ruffle 自行清屏，避免“背景图不显示只剩黑底”的观感 */
+        wmode: "opaque",
         allowscriptaccess: "always",
       },
       open: !0,
@@ -72,9 +85,14 @@
         t({ event: "mounted" }));
     },
     methods: {
+      /**
+       * 切换嵌入的 SWF：克隆节点实现过渡时，必须用 changeIng 串行，否则会叠多个 Ruffle 实例产生重影。
+       * @param {{ router?: string, name?: string, children?: unknown[], show?: boolean }} e 菜单项或子项
+       */
       changeSwf(e) {
         if ((console.log(e), e?.children)) return void (e.show = !e.show);
         if (this.changeIng) return;
+        this.changeIng = !0;
         ((this.current = e.router), t({ event: "showSwf", title: e.name }));
         let r = this.dom;
         var n = r.cloneNode(!0);
@@ -89,9 +107,10 @@
           (r.style.opacity = 0),
           setTimeout(() => {
             try {
-              (r.remove(), (r = null), (this.changeIng = !1));
+              (r.remove(), (r = null));
             } catch (e) {}
-            this.dom = document.getElementById("gameMain");
+            ((this.changeIng = !1),
+              (this.dom = document.getElementById("gameMain")));
           }, 100));
       },
       closeWindow() {

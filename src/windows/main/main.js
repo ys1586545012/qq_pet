@@ -32,9 +32,111 @@
               (this.show = !1),
               (this.name = "main"),
               (this.menu = null),
+              (this.mouseIgnoreState = !1),
+              (this.mouseHitTimer = null),
+              (this.mouseHitRequestId = 0),
+              (this.mouseHotArea = null),
               (this.loadTime = { seeControlTime: null }));
           }
           reLoad = !0;
+          /**
+           * 设置主宠物窗口是否穿透鼠标；透明像素穿透时开启光标轮询，用于恢复实体像素点击。
+           * @param {BrowserWindow} e 主宠物窗口
+           * @param {boolean} t true 表示鼠标事件穿透到桌面或下层窗口
+           */
+          setMouseIgnore(e, t) {
+            try {
+              if (!e || ("function" == typeof e.isDestroyed && e.isDestroyed()))
+                return;
+              let o = !!t;
+              if (this.mouseIgnoreState != o) {
+                this.mouseIgnoreState = o;
+                o
+                  ? e.setIgnoreMouseEvents(!0, { forward: !0 })
+                  : e.setIgnoreMouseEvents(!1);
+              }
+              o ? this.startMouseHitWatch(e) : this.stopMouseHitWatch();
+            } catch (e) {}
+          }
+          /**
+           * 窗口处于点击穿透时，主进程继续轮询全局光标，避免 Windows 下收不到 mousemove 后无法恢复。
+           * @param {BrowserWindow} e 主宠物窗口
+           */
+          startMouseHitWatch(e) {
+            if (this.mouseHitTimer) return;
+            this.mouseHitTimer = setInterval(() => {
+              try {
+                if (!e || ("function" == typeof e.isDestroyed && e.isDestroyed()))
+                  return void this.stopMouseHitWatch();
+                let t = e.getBounds(),
+                  o = screen.getCursorScreenPoint(),
+                  n = o.x - t.x,
+                  i = o.y - t.y;
+                if (n < 0 || i < 0 || n > t.width || i > t.height) return;
+                if (this.isInMouseHotArea(n, i))
+                  return void this.setMouseIgnore(e, !1);
+                this.mouseHitRequestId++;
+                e.webContents.send("main_bus-html_checkMouseHit", {
+                  id: this.mouseHitRequestId,
+                  clientX: n,
+                  clientY: i,
+                });
+              } catch (e) {}
+            }, 16);
+          }
+          /** 停止透明区域命中轮询。 */
+          stopMouseHitWatch() {
+            this.mouseHitTimer &&
+              (clearInterval(this.mouseHitTimer), (this.mouseHitTimer = null));
+          }
+          /** 判断点是否落在旋转椭圆内，和渲染进程的企鹅轮廓模型保持一致。 */
+          isInEllipse(e, t, o, n, i, a, s = 0) {
+            let l = Math.cos(s),
+              c = Math.sin(s),
+              r = e - o,
+              h = t - n,
+              d = r * l + h * c,
+              u = -r * c + h * l;
+            return (d * d) / (i * i) + (u * u) / (a * a) <= 1;
+          }
+          /** 使用企鹅头、身体、翅膀和脚的组合轮廓判断是否应恢复点击。 */
+          isInPenguinHotShape(e, t, o) {
+            if (!o?.rectWidth || !o?.rectHeight) return !0;
+            let l = o.hitOffsetX || 0,
+              n = (e - o.rectLeft) / o.rectWidth - l,
+              i = (t - o.rectTop) / o.rectHeight,
+              a = Math.max(0.01, (o.padding || 0) / 200),
+              s = [
+                [0.5, 0.485, 0.148 + a, 0.09 + a, 0],
+                [0.5, 0.593, 0.218 + a, 0.132 + a, 0],
+                [0.5, 0.685, 0.175 + a, 0.182 + a, 0],
+                [0.5, 0.765, 0.218 + a, 0.135 + a, 0],
+                [0.34, 0.665, 0.048 + a, 0.152 + a, -0.45],
+                [0.66, 0.665, 0.048 + a, 0.152 + a, 0.45],
+                [0.4, 0.895, 0.086 + a, 0.034 + 0.35 * a, -0.08],
+                [0.6, 0.895, 0.086 + a, 0.034 + 0.35 * a, 0.08],
+              ];
+            for (let o of s)
+              if (this.isInEllipse(n, i, o[0], o[1], o[2], o[3], o[4]))
+                return !0;
+            return !1;
+          }
+          /**
+           * 判断主进程缓存的宠物热区是否包含光标；用于穿透状态下优先恢复点击。
+           * @param {number} e 鼠标在窗口内的 x
+           * @param {number} t 鼠标在窗口内的 y
+           */
+          isInMouseHotArea(e, t) {
+            let o = this.mouseHotArea;
+            return (
+              o &&
+              e >= o.left &&
+              t >= o.top &&
+              e <= o.right &&
+              t <= o.bottom &&
+              ("penguin" != o.shape || this.isInPenguinHotShape(e, t, o))
+            );
+          }
           cleate(e) {
             let { web: t, defaultPetInfo: o } = e;
             ((this.maxSize = [180, 180]),
@@ -549,6 +651,20 @@
                           doMovePosition(t);
                         },
                         "html_bus-main_getFocus": (e, t) => {},
+                        "html_bus-main_mouseIgnore": (e, o) => {
+                          n.setMouseIgnore(t, !!o?.ignore);
+                        },
+                        "html_bus-main_mouseHitResult": (e, o) => {
+                          if (
+                            o?.id &&
+                            o.id != n.mouseHitRequestId
+                          )
+                            return;
+                          o?.visible && n.setMouseIgnore(t, !1);
+                        },
+                        "html_bus-main_mouseHotArea": (e, t) => {
+                          n.mouseHotArea = t?.visible ? t : null;
+                        },
                         "html_bus-main_mouse": (e, t) => {
                           if (!n.isStop())
                             if ("which" == t.type) {
@@ -974,7 +1090,7 @@
                     (console.log("onhide ", this.name), (n.show = !1));
                   },
                   onclose() {
-                    console.log("onclose ", this.name);
+                    (n.stopMouseHitWatch(), console.log("onclose ", this.name));
                   },
                 })
                 .then((e) => {

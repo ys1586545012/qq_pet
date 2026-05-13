@@ -19,6 +19,8 @@
                   alwaysOnTop: !1,
                   skipTaskbar: !1,
                   transparent: !1,
+                  /** 覆盖全局 defaultOption 的 #00000000，否则非透明窗体下整页易呈黑色 */
+                  backgroundColor: "#f0f2f5",
                   resizable: !0,
                 },
                 created(e) {

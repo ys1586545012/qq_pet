@@ -2,17 +2,46 @@
   var __webpack_modules__ = {
       881: (module) => {
         const _require = eval("require"),
-          { app } = _require("electron"),
+          { app, screen } = _require("electron"),
           infoCard = _require("../infoCard/main.js"),
           control = _require("../control/main.js"),
           setup = _require("../setup/main.js"),
           smallGame = _require("../smallGame/main.js"),
           store = _require("../store/main.js");
+        /**
+         * 右键菜单窗口控制器。
+         * 负责菜单创建、位置计算和菜单动作分发。
+         */
         class mainClass {
           constructor(e) {
             ((this.window = null), (this.show = !1), (this.name = "rightMenu"));
           }
           positionType = null;
+          /**
+           * 把菜单窗口坐标限制在当前显示器工作区内，避免贴边时超出屏幕。
+           * @param {number[]} point 期望坐标 [x, y]
+           * @param {number} width 菜单窗口宽度
+           * @param {number} height 菜单窗口高度
+           * @returns {number[]} 修正后的坐标 [x, y]
+           */
+          getSafePosition(point, width, height) {
+            let [x, y] = point;
+            let display = screen.getDisplayNearestPoint({
+              x: Math.trunc(x),
+              y: Math.trunc(y),
+            });
+            let workArea = display?.workArea || {
+              x: 0,
+              y: 0,
+              width: 1920,
+              height: 1080,
+            };
+            let minX = workArea.x,
+              minY = workArea.y,
+              maxX = workArea.x + Math.max(0, workArea.width - width),
+              maxY = workArea.y + Math.max(0, workArea.height - height);
+            return [Math.min(Math.max(x, minX), maxX), Math.min(Math.max(y, minY), maxY)];
+          }
           cleate(e) {
             let { nowPosition: t, msg: o, positionType: a } = e;
             ((this.positionType = a), (this.width = 340), (this.height = 300));
@@ -22,6 +51,7 @@
             ];
             "followMain" == this.positionType &&
               ((s[0] += this.width / 2 / 2), (s[1] += 80));
+            s = this.getSafePosition(s, this.width, this.height);
             let n = this;
             windowsMain
               .open({

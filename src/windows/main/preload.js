@@ -10,6 +10,8 @@
       main_ToHtml_active: (e) => ipcRenderer.on("main_bus-html_active", e),
       main_m_nextActive: (e) => ipcRenderer.on("main_m_nextActive_h", e),
       main_m_setFloat: (e) => ipcRenderer.on("main_m_setFloat_h", e),
+      main_ToHtml_checkMouseHit: (e) =>
+        ipcRenderer.on("main_bus-html_checkMouseHit", e),
     },
     html_main = {
       html_ToMain_move: (e) => ipcRenderer.send("html_bus-main_move", e),
@@ -21,6 +23,12 @@
       html_ToMain_mouse: (e) => ipcRenderer.send("html_bus-main_mouse", e),
       html_ToMain_getFocus: (e) =>
         ipcRenderer.send("html_bus-main_getFocus", e),
+      html_ToMain_mouseIgnore: (e) =>
+        ipcRenderer.send("html_bus-main_mouseIgnore", e),
+      html_ToMain_mouseHitResult: (e) =>
+        ipcRenderer.send("html_bus-main_mouseHitResult", e),
+      html_ToMain_mouseHotArea: (e) =>
+        ipcRenderer.send("html_bus-main_mouseHotArea", e),
       main_h_setPetState: (e) => ipcRenderer.send("main_h_setPetState_m", e),
     };
   (contextBridge.exposeInMainWorld("electronAPI", {

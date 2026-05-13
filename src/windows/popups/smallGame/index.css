@@ -1,3 +1,12 @@
+/**
+ * 小游戏窗口：页面层给实底，避免 app.html 里 html/body/#app 全透明时与 Ruffle 透明区叠成一片黑。
+ */
+html,
+body,
+#app {
+  background-color: #f0f2f5 !important;
+}
+
 #appMain {
   display: flex;
   align-items: center;
@@ -5,7 +14,7 @@
   flex-direction: column;
   transition: all 1s;
   font-size: 14px;
-  background-color: transparent !important;
+  background-color: #f0f2f5 !important;
 }
 .home {
   width: 100%;
@@ -13,6 +22,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #f0f2f5;
 }
 .leftMenu {
   width: 150px;
@@ -72,6 +82,8 @@
   flex: 1;
   width: 0px;
   height: 100%;
+  /** Ruffle 画布区域也给底，切换 SWF 时空档不致闪黑 */
+  background-color: #f0f2f5;
 }
 .gameMain {
   width: 100%;
